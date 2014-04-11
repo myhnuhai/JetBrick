@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="JetBrick:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="JetBrick.war">
+      <element id="artifact" artifact-name="JetBrick:war exploded" />
+    </root>
+  </artifact>
+</component>

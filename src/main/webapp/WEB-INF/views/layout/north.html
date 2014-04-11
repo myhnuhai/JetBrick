@@ -1,0 +1,70 @@
+<script type="text/javascript" charset="utf-8">
+    function logoutFun(b) {
+        $.getJSON('${ctxpath}/userController/logout.jetx', {
+            t: new Date()
+        }, function (result) {
+            if (b) {
+                location.replace('${ctxpath}/');
+            } else {
+                $('#sessionInfoDiv').html('');
+                $('#loginDialog').dialog('open');
+            }
+        });
+    }
+
+    function editCurrentUserPwd() {
+        parent.$.modalDialog({
+            title: '修改密码',
+            width: 300,
+            height: 250,
+            href: '${ctxpath}/userController/editCurrentUserPwdPage.html',
+            buttons: [
+                {
+                    text: '修改',
+                    handler: function () {
+                        var f = parent.$.modalDialog.handler.find('#editCurrentUserPwdForm');
+                        f.submit();
+                    }
+                }
+            ]
+        });
+    }
+    function currentUserRole() {
+        parent.$.modalDialog({
+            title: '我的角色',
+            width: 300,
+            height: 250,
+            href: '${ctxpath}/userController/currentUserRolePage.html'
+        });
+    }
+    function currentUserResource() {
+        parent.$.modalDialog({
+            title: '我可以访问的资源',
+            width: 300,
+            height: 250,
+            href: '${ctxpath}/userController/currentUserResourcePage.html'
+        });
+    }
+</script>
+<div style="width: 100%;height: 100%">
+    <div style="position: absolute; right: 0px; bottom: 0px;">
+        <a href="javascript:void(0);" class="easyui-menubutton"
+           data-options="menu:'#layout_north_kzmbMenu',iconCls:'cog'">控制面板</a>
+        <a href="javascript:void(0);" class="easyui-menubutton"
+           data-options="menu:'#layout_north_zxMenu',iconCls:'cog'">注销</a>
+    </div>
+</div>
+
+<div id="layout_north_kzmbMenu" style="width: 100px; display: none;">
+    <div onclick="editCurrentUserPwd();">修改密码</div>
+    <div class="menu-sep"></div>
+    <div onclick="currentUserRole();">我的角色</div>
+    <div class="menu-sep"></div>
+    <div onclick="currentUserResource();">我的权限</div>
+</div>
+<div id="layout_north_zxMenu" style="width: 100px; display: none;">
+    <div onclick="logoutFun(true);">锁定窗口</div>
+    <div class="menu-sep"></div>
+    <div onclick="logoutFun(true);">重新登录</div>
+    <div onclick="logoutFun(true);">退出系统</div>
+</div>

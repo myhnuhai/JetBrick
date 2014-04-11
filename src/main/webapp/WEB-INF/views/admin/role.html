@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    #include("/inc.html")
+    #define(SessionInfo sessionInfo)
+    <script type="text/javascript">
+        var grid;
+        var addFun = function () {
+            parent.$.modalDialog({
+                title: '添加角色',
+                width: 500,
+                height: 300,
+                href: '${ctxpath}/roleController/addPage.html',
+                buttons: [
+                    {
+                        text: '添加',
+                        handler: function () {
+                            parent.$.modalDialog.openner_dataGrid = grid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                            var f = parent.$.modalDialog.handler.find('#form');
+                            f.submit();
+                        }
+                    }
+                ]
+            });
+        };
+
+        var editFun = function (id) {
+            if (id == undefined) {
+                var rows = grid.datagrid('getSelections');
+                id = rows[0].id;
+            } else {
+                grid.datagrid('unselectAll').datagrid('uncheckAll');
+            }
+            parent.$.modalDialog({
+                title: '编辑用户',
+                width: 500,
+                height: 300,
+                href: '${ctxpath}/roleController/editPage.html?id=' + id,
+                buttons: [
+                    {
+                        text: '编辑',
+                        handler: function () {
+                            parent.$.modalDialog.openner_dataGrid = grid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                            var f = parent.$.modalDialog.handler.find('#form');
+                            f.submit();
+                        }
+                    }
+                ]
+            });
+        };
+        var removeFun = function (id) {
+            if (id == undefined) {//点击右键菜单才会触发这个
+                var rows = grid.datagrid('getSelections');
+                id = rows[0].id;
+            } else {//点击操作里面的删除图标会触发这个
+                grid.datagrid('unselectAll').datagrid('uncheckAll');
+            }
+            parent.$.messager.confirm('询问', '您是否要删除当前角色？', function (b) {
+                if (b) {
+                    parent.$.messager.progress({
+                        title: '提示',
+                        text: '数据处理中，请稍后....'
+                    });
+                    $.post('${ctxpath}/roleController/delete.jetx', {
+                        id: id
+                    }, function (result) {
+                        if (result.success) {
+                            parent.$.messager.alert('提示', result.msg, 'info');
+                            grid.datagrid('reload');
+                        }
+                        parent.$.messager.progress('close');
+                    }, 'JSON');
+                }
+            });
+        };
+        var grantFun = function (id) {
+            grid.datagrid('unselectAll').datagrid('uncheckAll');
+            parent.$.modalDialog({
+                title : '用户授权',
+                width : 500,
+                height : 300,
+                href : '${ctxpath}/roleController/grantPage.html?id=' + id,
+                buttons : [ {
+                    text : '授权',
+                    handler : function() {
+                        parent.$.modalDialog.openner_dataGrid = grid;//因为授权成功之后，需要刷新这个dataGrid，所以先预定义好
+                        var f = parent.$.modalDialog.handler.find('#form');
+                        f.submit();
+                    }
+                } ]
+            });
+        };
+        $(function () {
+            grid = $('#grid').datagrid({
+                url: '${ctxpath}/roleController/dataGrid.jetx',
+                striped: true,
+                rownumbers: true,
+                pagination: true,
+                singleSelect: true,
+                idField: 'id',
+                sortName: 'seq',
+                sortOrder: 'asc',
+                frozenColumns: [
+                    [
+                        {
+                            title: '操作',
+                            align: 'center',
+                            field: 'action',
+                            width: '80',
+                            formatter: function (value, row) {
+                                var str = '';
+                                str += $.formatString('<img class="iconImg note_edit" title="编辑" onclick="editFun(\'{0}\');"/>', row.id);
+                                str += '&nbsp;';
+                                str += $.formatString('<img class="iconImg key" title="授权" onclick="grantFun(\'{0}\');"/>', row.id);
+                                str += '&nbsp;';
+                                str += $.formatString('<img class="iconImg note_delete" title="删除" onclick="removeFun(\'{0}\');"/>', row.id);
+                                return str;
+                            }
+                        },
+                        {
+                            width: '100',
+                            title: '角色名称',
+                            field: 'name',
+                            sortable: true
+                        }
+                    ]
+                ],
+                columns: [
+                    [
+                        {
+                            width: '150',
+                            title: '创建时间',
+                            field: 'createdatetime',
+                            sortable: true
+                        },
+                        {
+                            width: '150',
+                            title: '修改时间',
+                            field: 'updatedatetime',
+                            sortable: true
+                        },
+                        {
+                            width: '200',
+                            hidden: true,
+                            title: '拥有资源ID',
+                            field: 'resourceIds'
+                        },
+                        {
+                            width: '200',
+                            title: '拥有资源',
+                            field: 'resourceNames'
+                        },
+                        {
+                            width: '200',
+                            title: '资源描述',
+                            field: 'remark'
+                        },
+                        {
+                            width: '60',
+                            title: '排序',
+                            field: 'seq',
+                            hidden: true,
+                            sortable: true
+                        }
+                    ]
+                ],
+                toolbar: '#toolbar',
+                onBeforeLoad: function (param) {
+                    parent.$.messager.progress({
+                        text: '数据加载中....'
+                    });
+                },
+                onLoadSuccess: function (data) {
+                    $('.iconImg').attr('src', $.pixel_0);
+                    parent.$.messager.progress('close');
+                }
+            });
+        });
+    </script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+<div id="toolbar" style="display: none;">
+    <table>
+        <tr>
+
+            <td><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'note_add',plain:true"
+                   onclick="addFun();">添加</a></td>
+
+            <td>
+                <div class="datagrid-btn-separator"></div>
+            </td>
+            <td><input id="searchBox" class="easyui-searchbox" style="width: 150px"
+                       data-options="searcher:function(value,name){grid.datagrid('load',{'name':value});},prompt:'搜索角色名称'">
+            </td>
+            <td><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'zoom_out',plain:true"
+                   onclick="$('#searchBox').searchbox('setValue','');grid.datagrid('load',{});">清空查询</a></td>
+        </tr>
+    </table>
+</div>
+<div data-options="region:'center',fit:true,border:false">
+    <table id="grid" data-options="fit:true,border:false"></table>
+</div>
+</body>
+</html>

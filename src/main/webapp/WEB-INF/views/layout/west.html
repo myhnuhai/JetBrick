@@ -1,0 +1,45 @@
+<script type="text/javascript">
+    var layout_west_tree;
+    var layout_west_tree_url = '';
+
+    $(function() {
+        layout_west_tree = $('#layout_west_tree').tree({
+            url : '${ctxpath()}/resourceController/tree.jetx',
+            parentField : 'pid',
+            //lines : true,
+            onClick : function(node) {
+                if (node.attributes && node.attributes.url) {
+                    var url;
+                    if (node.attributes.url.indexOf('/') == 0) {/*如果url第一位字符是"/"，那么代表打开的是本地的资源*/
+                        url = '${ctxpath()}' + node.attributes.url;
+                        if (url.indexOf('/druidController') == -1) {/*如果不是druid相关的控制器连接，那么进行遮罩层屏蔽*/
+//                            parent.$.messager.progress({
+//                                title : '提示',
+//                                text : '数据处理中，请稍后....'
+//                            });
+                        }
+                    } else {/*打开跨域资源*/
+                        url = node.attributes.url;
+                    }
+
+                    FrameTab.addTab(node.text,url,node.iconCls)
+                }
+            },
+            onBeforeLoad : function(node, param) {
+                if (layout_west_tree_url) {//只有刷新页面才会执行这个方法
+//                    parent.$.messager.progress({
+//                        title : '提示',
+//                        text : '数据处理中，请稍后....'
+//                    });
+                }
+            },
+            onLoadSuccess : function(node, data) {
+                //parent.$.messager.progress('close');
+            }
+        });
+    });
+</script>
+        <div class="well well-small">
+            <ul id="layout_west_tree"></ul>
+        </div>
+</div>

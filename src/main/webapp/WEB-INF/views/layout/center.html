@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JetBrick框架测试</title>
+    #include("/inc.html")
+
+    <script type="text/javascript">
+        var main_layout;
+        $(function(){
+            main_layout = $("#main_layout").layout({
+                fit:true
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="main_layout">
+    <h1>内容显示主题中心</h1>
+    <div  style="width: 100%">
+
+        <h1>Hello Word!</h1>
+        <h3>Web完整路径：${webroot()}</h3>
+        <h3>ConextPath：${ctxpath()}</h3>
+        <h3>Date：${now().format("yyyy-MM-dd HH:mm:ss")}</h3>
+        <h3>Random：${random()}</h3>
+        <h3>UUID：${uuid()}</h3>
+        <h3>userid:${sessionInfo.toString()}</h3>
+    </div>
+</div>
+
+</body>
+</html>

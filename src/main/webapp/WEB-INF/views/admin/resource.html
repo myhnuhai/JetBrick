@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    #include("/inc.html")
+    <script type="text/javascript">
+
+        var grid;
+        var addFun = function () {
+            parent.$.modalDialog({
+                title: '添加资源',
+                width: 500,
+                height: 300,
+                href: '${ctxpath}/resourceController/addPage.html',
+                buttons: [
+                    {
+                        text: '添加',
+                        handler: function () {
+                            parent.$.modalDialog.openner_treeGrid = grid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                            var f = parent.$.modalDialog.handler.find('#form');
+                            f.submit();
+                        }
+                    }
+                ]
+            });
+        };
+        var showFun = function (id) {
+
+            return;
+            var dialog = parent.$.modalDialog({
+                title: '查看资源信息',
+                width: 500,
+                height: 300,
+                url: '${ctxpath}/resourceController/showPage.html'
+            });
+        };
+        var editFun = function (id) {
+            if (id != undefined) {
+                grid.treegrid('select', id);
+            }
+            var node = grid.treegrid('getSelected');
+            if (node) {
+                parent.$.modalDialog({
+                    title : '编辑资源',
+                    width : 500,
+                    height : 300,
+                    href : '${ctxpath}/resourceController/editPage.html?id=' + node.id,
+                    buttons : [ {
+                        text : '编辑',
+                        handler : function() {
+                            parent.$.modalDialog.openner_treeGrid = grid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                            var f = parent.$.modalDialog.handler.find('#form');
+                            f.submit();
+                        }
+                    } ]
+                });
+            }
+        };
+        var removeFun = function (id) {
+            parent.$.messager.confirm('询问', '您确定要删除此记录？', function (r) {
+                if (r) {
+                    $.post('${ctxpath}/resourceController/delete.jetx', {
+                        id: id
+                    }, function () {
+                        grid.treegrid('reload');
+                        parent.mainMenu.tree('reload');
+                    }, 'json');
+                }
+            });
+        };
+        var redoFun = function () {
+            var node = grid.treegrid('getSelected');
+            if (node) {
+                grid.treegrid('expandAll', node.id);
+            } else {
+                grid.treegrid('expandAll');
+            }
+        };
+        var undoFun = function () {
+            var node = grid.treegrid('getSelected');
+            if (node) {
+                grid.treegrid('collapseAll', node.id);
+            } else {
+                grid.treegrid('collapseAll');
+            }
+        };
+        $(function () {
+            grid = $('#grid').treegrid({
+                title: '',
+                url: '${ctxpath}/resourceController/treeGrid.jetx',
+                idField: 'id',
+                fit:true,
+                treeField: 'name',
+                parentField: 'pid',
+                rownumbers: true,
+                pagination: false,
+                sortName: 'seq',
+                sortOrder: 'asc',
+                frozenColumns: [
+                    [
+                        {
+                            title: '操作',
+                            field: 'action',
+                            align: 'center',
+                            width: '60',
+                            formatter: function (value, row) {
+                                var str = '';
+                                str += $.formatString('<img class="iconImg note_edit" title="编辑" onclick="editFun(\'{0}\');"/>', row.id);
+                                str += '&nbsp;';
+                                str += $.formatString('<img class="iconImg delete" title="删除" onclick="removeFun(\'{0}\');"/>', row.id);
+
+                                return str;
+                            }
+                        },{
+                            width: '200',
+                            title: '资源名称',
+                            field: 'name'
+                        }
+                    ]
+                ],
+                columns: [
+                    [
+                        {
+                            title: '图标名称',
+                            field: 'iconCls',
+                            hidden: true
+                        },
+                        {
+                            width: '200',
+                            title: '资源路径',
+                            field: 'url',
+                            formatter: function (value, row) {
+                                if (value) {
+                                    return $.formatString('<span title="{0}">{1}</span>', value, value);
+                                }
+                            }
+                        },
+                        {
+                            width: '60',
+                            title: '资源类型',
+                            field: 'typeName'
+                        },
+                        {
+                            width: '150',
+                            title: '创建时间',
+                            field: 'createdatetime'
+                        },
+                        {
+                            width: '150',
+                            title: '修改时间',
+                            field: 'updatedatetime'
+
+                        },
+                        {
+                            hidden: true,
+                            title: '上级资源ID',
+                            field: 'pid'
+                        },
+                        {
+                            width: '100',
+                            title: '上级资源名称',
+                            field: 'pname'
+                        },
+                        {
+                            width: '200',
+                            title: '资源描述',
+                            field: 'description',
+                            formatter: function (value, row) {
+                                if (value) {
+                                    return $.formatString('<span title="{0}">{1}</span>', value, value);
+                                }
+                            }
+                        },
+                        {
+                            width: '50',
+                            title: '排序',
+                            field: 'seq',
+                            hidden: true
+                        },
+                        {
+                            hidden: true,
+                            title: '目标',
+                            field: 'target'
+                        }
+
+                    ]
+                ],
+                toolbar: '#toolbar',
+                onBeforeLoad: function (row, param) {
+                    parent.$.messager.progress({
+                        text: '数据加载中....'
+                    });
+                },
+                onLoadSuccess: function (row, data) {
+                    $('.iconImg').attr('src', $.pixel_0);
+                    parent.$.messager.progress('close');
+                    $(this).treegrid('tooltip');
+                },
+                onContextMenu : function(e, row) {
+                    e.preventDefault();
+                    $(this).treegrid('unselectAll');
+                    $(this).treegrid('select', row.id);
+                    $('#menu').menu('show', {
+                        left : e.pageX,
+                        top : e.pageY
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+<div id="toolbar" style="display: none;">
+    <table>
+        <tr>
+
+            <td><a href="javascript:void(0);" class="easyui-linkbutton"
+                   data-options="iconCls:'note_add',plain:true" onclick="addFun();">添加</a></td>
+
+            <td>
+                <div class="datagrid-btn-separator"></div>
+            </td>
+            <td>
+                <a onclick="redoFun();" href="javascript:void(0);" class="easyui-linkbutton"
+                   data-options="plain:true,iconCls:'resultset_next'">展开</a>
+                <a onclick="undoFun();"  href="javascript:void(0);" class="easyui-linkbutton"
+                   data-options="plain:true,iconCls:'resultset_previous'">折叠</a>
+            </td>
+            <td>
+                <div class="datagrid-btn-separator"></div>
+            </td>
+            <td><a onclick="grid.treegrid('reload');" href="javascript:void(0);" class="easyui-linkbutton"
+                   data-options="plain:true,iconCls:'arrow_refresh'">刷新</a></td>
+        </tr>
+    </table>
+</div>
+<div data-options="region:'center',fit:true,border:false">
+    <div style="width: 100%; height: 100%" class="panel col-lg-12 col-sm-12">
+        <table id="grid" data-options="fit:true,border:false" class="table"></table>
+    </div>
+</div>
+<div id="menu" class="easyui-menu" style="width: 120px; display: none;">
+    <!--<div onclick="addFun();" data-options="iconCls:'pencil_add'">增加</div>-->
+    <div onclick="editFun();" data-options="iconCls:'pencil'">编辑</div>
+    <div onclick="removeFun();" data-options="iconCls:'pencil_delete'">删除</div>
+
+</div>
+</body>
+</html>

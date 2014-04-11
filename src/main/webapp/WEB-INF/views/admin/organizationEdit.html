@@ -1,0 +1,89 @@
+#define(Orgnization organization)
+<script type="text/javascript">
+    $(function () {
+        $('#iconCls').combobox({
+            data: $.iconData,
+            editable: false,
+            formatter: function (v) {
+                return $.formatString('<span class="{0}" style="display:inline-block;vertical-align:middle;width:16px;height:16px;"></span>{1}', v.value, v.value);
+            },
+            value:'${organization.iconCls}'
+        });
+        $('#pid').combotree({
+            url: '${ctxpath}/organizationController/tree.jetx',
+            idField: 'id',
+            textField: 'name',
+            parentField: 'pid',
+            lines: true,
+            editable: false,
+            panelHeight: 'auto',
+            value:'${organization.pid}',
+            onLoadSuccess: function () {
+                parent.$.messager.progress('close');
+            }
+        });
+
+        $('#form').form({
+            url: '${ctxpath}/organizationController/edit.jetx',
+            onSubmit: function () {
+                parent.$.messager.progress({
+                    title: '提示',
+                    text: '数据处理中，请稍后....'
+                });
+                var isValid = $(this).form('validate');
+                if (!isValid) {
+                    parent.$.messager.progress('close');
+                }
+                return isValid;
+            },
+            success: function (result) {
+                parent.$.messager.progress('close');
+                result = $.parseJSON(result);
+                if (result.success) {
+                    parent.$.modalDialog.openner_treeGrid.treegrid('reload');//之所以能在这里调用到parent.$.modalDialog.openner_treeGrid这个对象，是因为resource.jsp页面预定义好了
+                    parent.layout_west_tree.tree('reload');
+                    parent.$.modalDialog.handler.dialog('close');
+                }
+            }
+        });
+    });
+</script>
+<div class="easyui-layout" data-options="fit:true,border:false">
+    <div data-options="region:'center',border:false" title="" style="overflow: hidden;">
+        <form id="form" method="post">
+            <table class="table table-hover table-condensed" style="width: 100%;">
+                <tr>
+                    <th>编号</th>
+                    <td><input name="id" value="${organization.id}" readonly="readonly" style="width: 130px"/></td>
+                    <th>机构名称</th>
+                    <td><input name="name" value="${organization.name}" class="easyui-validatebox" data-options="required:true" style="width: 130px"/></td>
+                </tr>
+                <tr>
+                    <th>机构编码</th>
+                    <td><input name="code" value="${organization.code}"/></td>
+                    <th>顺序</th>
+                    <td><input name="seq" class="easyui-numberspinner"
+                               data-options="required:true,min:0,max:100000,editable:false" style="width: 130px;"
+                               value="${organization.seq}"/></td>
+                </tr>
+                <tr>
+                    <th>上级机构</th>
+                    <td><select id="pid" name="pid" style="width: 130px;"></select>
+                        <img class="iconImg cross" onclick="$('#pid').combotree('clear');" title="清空"/></td>
+                    <th>机构图标</th>
+                    <td><input id="iconCls" name="iconCls"
+                               style="padding-left: 18px; width: 130px;"/>&nbsp;<img
+                            class="iconImg cross" onclick="$('#iconCls').val('');$('#iconCls').attr('class','');"
+                            title="清空"/></td>
+                </tr>
+                <tr>
+                    <th>机构地址</th>
+                    <td colspan="3"><textarea name="address" rows="" cols="" class="span5" style="width: 365px;height: 60px">${organization.address}</textarea></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+</div>

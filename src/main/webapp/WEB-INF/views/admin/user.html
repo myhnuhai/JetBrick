@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+    #include("/inc.html")
+#define(SessionInfo sessionInfo)
+<script type="text/javascript">
+	var grid;
+    function editFun(id) {
+        if (id == undefined) {
+            var rows = grid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+            grid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.modalDialog({
+            title : '编辑用户',
+            width : 500,
+            height : 300,
+            href : '${ctxpath}/userController/editPage.html?id=' + id,
+            buttons : [ {
+                text : '编辑',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = grid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#form');
+                    f.submit();
+                }
+            } ]
+        });
+    }
+
+    function addFun() {
+        parent.$.modalDialog({
+            title : '添加用户',
+            width : 500,
+            height : 300,
+            href : '${ctxpath}/userController/addPage.html',
+            buttons : [ {
+                text : '添加',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = grid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#form');
+                    f.submit();
+                }
+            } ]
+        });
+    }
+    function removeFun(id) {
+        if (id == undefined) {//点击右键菜单才会触发这个
+            var rows = grid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {//点击操作里面的删除图标会触发这个
+            grid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.messager.confirm('询问', '您是否要删除当前用户？', function(b) {
+            if (b) {
+                var currentUserId = '${sessionInfo.id}';/*当前登录用户的ID*/
+                if (currentUserId != id) {
+                    parent.$.messager.progress({
+                        title : '提示',
+                        text : '数据处理中，请稍后....'
+                    });
+                    $.post('${ctxpath}/userController/delete.jetx', {
+                        id : id
+                    }, function(result) {
+                        if (result.success) {
+                            parent.$.messager.alert('提示', result.msg, 'info');
+                            grid.datagrid('reload');
+                        }
+                        parent.$.messager.progress('close');
+                    }, 'JSON');
+                } else {
+                    parent.$.messager.show({
+                        title : '提示',
+                        msg : '不可以删除自己！'
+                    });
+                }
+            }
+        });
+    }
+
+	var grantRoleFun = function(id) {
+        grid.datagrid('unselectAll').datagrid('uncheckAll');
+        parent.$.modalDialog({
+            title : '用户角色授权',
+            width : 500,
+            height : 300,
+            href : '${ctxpath}/userController/grantRolePage.html?ids=' + id,
+            buttons : [ {
+                text : '授权',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = grid;//因为授权成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#form');
+                    f.submit();
+                }
+            } ]
+        });
+	};
+	var grantOrganizationFun = function(id) {
+        grid.datagrid('unselectAll').datagrid('uncheckAll');
+        var dialog = parent.$.modalDialog({
+            title : '用户部门授权',
+            width : 500,
+            height : 300,
+            href : '${ctxpath}/userController/grantOrganizationPage.html?id=' + id,
+            buttons : [ {
+                text : '授权',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = grid;//因为授权成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#form');
+                    f.submit();
+                }
+            } ]
+        });
+	};
+	$(function() {
+		grid = $('#grid').datagrid({
+			title : '',
+			url : '${ctxpath}/userController/dataGrid.jetx',
+            fit:true,
+            fitColumns:true,
+			striped : true,
+			rownumbers : true,
+			pagination : true,
+			singleSelect : true,
+			idField : 'id',
+			sortName : 'createdatetime',
+			sortOrder : 'desc',
+			pageSize : 50,
+			pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500 ],
+			frozenColumns : [ [ {
+                title : '操作',
+                field : 'action',
+                width : '90',
+                align : 'center',
+                formatter : function(value, row) {
+                    var str = '';
+
+                    //str += $.formatString('<img class="iconImg note" title="查看" onclick="showFun(\'{0}\');"/>', row.id);
+
+                    str += $.formatString('<img class="iconImg note_edit" title="编辑" onclick="editFun(\'{0}\');"/>', row.id);
+                    str += '&nbsp;';
+                    str += $.formatString('<img class="iconImg user" title="用户角色" onclick="grantRoleFun(\'{0}\');"/>', row.id);
+                    str += '&nbsp;';
+                    str += $.formatString('<img class="iconImg group" title="用户机构" onclick="grantOrganizationFun(\'{0}\');"/>', row.id);
+                    str += '&nbsp;';
+                    str += $.formatString('<img class="iconImg note_delete" title="删除" onclick="removeFun(\'{0}\');"/>', row.id);
+
+                    return str;
+                }
+            },{
+				width : '100',
+				title : '登录名',
+				field : 'loginname',
+				sortable : true
+			}, {
+				width : '80',
+				title : '姓名',
+				field : 'name',
+				sortable : true
+			} ] ],
+			columns : [ [ {
+				width : '150',
+				title : '创建时间',
+				field : 'createdatetime',
+				sortable : true
+			}, {
+				width : '150',
+				title : '修改时间',
+				field : 'updatedatetime',
+				sortable : true
+			}, {
+				width : '50',
+				title : '性别',
+				field : 'sex',
+				sortable : true,
+				formatter : function(value, row, index) {
+					switch (value) {
+					case '0':
+						return '女';
+					case '1':
+						return '男';
+					}
+				}
+			}, {
+				width : '50',
+				title : '年龄',
+				field : 'age',
+				hidden : true
+			},  {
+                width : '50',
+                title : '拥有角色ID',
+                field : 'roleIds',
+                hidden : true
+            }, {
+                width : '250',
+                title : '拥有角色',
+                field : 'roleNames'
+            }, {
+                width : '50',
+                title : '拥有组织ID',
+                field : 'organizationIds',
+                hidden : true
+            }, {
+                width : '150',
+                title : '拥有部门',
+                field : 'organizationNames'
+            }, {
+                width : '250',
+                title : '照片',
+                field : 'photo',
+                formatter : function(value, row) {
+                    if(value){
+                        return $.formatString('<span title="{0}">{1}</span>', value, value);
+                    }
+                }
+            } ] ],
+			toolbar : '#toolbar',
+			onBeforeLoad : function(param) {
+				parent.$.messager.progress({
+					text : '数据加载中....'
+				});
+			},
+			onLoadSuccess : function(data) {
+				$('.iconImg').attr('src', $.pixel_0);
+				parent.$.messager.progress('close');
+                $(this).treegrid('tooltip');
+			}
+		});
+	});
+</script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+	<div id="toolbar" style="display: none;">
+		<table>
+			<tr>
+				<td>
+					<form id="searchForm">
+						<table>
+							<tr>
+								<td>登录名</td>
+								<td><input name="loginname" style="width: 80px;" /></td>
+								<td>姓名</td>
+								<td><input name="name" style="width: 80px;" /></td>
+								<td>性别</td>
+								<td><select name="sex" class="easyui-combobox" data-options="panelHeight:'auto',editable:false"><option value="">请选择</option>
+										<option value="1">男</option>
+										<option value="0">女</option></select></td>
+
+								<td>
+                                    <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'zoom',plain:true" onclick="grid.datagrid('load',$.serializeObject($('#searchForm')));">过滤</a>
+                                    <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'zoom_out',plain:true" onclick="$('#searchForm input').val('');grid.datagrid('load',{});">重置过滤</a>
+                                </td>
+							</tr>
+						</table>
+					</form>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<table>
+						<tr>
+
+							<td><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'note_add',plain:true" onclick="addFun();">添加</a></td>
+
+							<td><div class="datagrid-btn-separator"></div></td>
+							<td><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'table_add',plain:true" onclick="">导入</a></td>
+							<td><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'table_go',plain:true" onclick="">导出</a></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div data-options="region:'center',fit:true,border:false">
+        <div style="width: 100%; height: 100%" class="panel">
+            <table id="grid" data-options="fit:true,border:false"  class="table table-hover"></table>
+        </div>
+	</div>
+</body>
+</html>

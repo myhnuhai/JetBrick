@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:mvn="http://www.springframework.org/schema/mvc"
+             xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+    <context:component-scan base-package="org.myhnuhai.controller" />
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!--<resources mapping="/resources/**" location="/resources/" />-->
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="jetbrick.template.web.springmvc.JetTemplateViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="contentType" value="text/html; charset=UTF-8" />
+		<beans:property name="suffix" value=".html" />
+	</beans:bean>
+
+    <beans:bean id="mappingJackson2HttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <beans:property name="supportedMediaTypes">
+            <beans:list>
+                <beans:value>text/html;charset=UTF-8</beans:value>
+                <beans:value>application/json;charset=UTF-8</beans:value>
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+    <beans:bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <beans:property name="messageConverters">
+            <beans:list>
+                <beans:ref bean="mappingJackson2HttpMessageConverter" />
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+    <interceptors>
+        <interceptor>
+            <mapping path="/**"/>
+            <beans:bean class="org.myhnuhai.core.security.SecurityInterceptor">
+                <beans:property name="excludeRequst">
+                    <beans:list>
+                        <beans:value>/login.html</beans:value>
+                        <beans:value>/layout/west.html</beans:value>
+                        <beans:value>/layout/north.html</beans:value>
+                        <beans:value>/layout/center.html</beans:value>
+                        <beans:value>/layout/south.html</beans:value>
+                        <beans:value>/userController/login.jetx</beans:value>
+                        <beans:value>/initController/init.jetx</beans:value><!-- 初始化数据库 -->
+                        <beans:value>/resourceController/tree.jetx</beans:value><!-- 首页左侧功能菜单 -->
+                        <beans:value>/userController/reg.jetx</beans:value><!-- 用户注册 -->
+                        <beans:value>/userController/login.jetx</beans:value><!-- 用户登录 -->
+                        <beans:value>/userController/loginCombobox.jetx</beans:value><!-- 用户登录里面的autocomplete功能 -->
+                        <beans:value>/userController/loginCombogrid.jetx</beans:value><!-- 用户登录里面的combogrid功能 -->
+                        <beans:value>/userController/logout.jetx</beans:value><!-- 注销登录 -->
+                        <beans:value>/resourceController/allTree.jetx</beans:value><!-- 角色访问资源下拉树 -->
+                        <beans:value>/roleController/tree.jetx</beans:value><!-- 用户访问角色树(只能看到自己拥有的角色) -->
+                        <beans:value>/roleController/allTree.jetx</beans:value><!-- 用户访问角色树 -->
+                        <beans:value>/userController/editCurrentUserPwdPage.jetx</beans:value><!-- 用户修改自己的密码页面 -->
+                        <beans:value>/userController/editCurrentUserPwd.jetx</beans:value><!-- 用户修改自己的密码 -->
+                        <beans:value>/userController/currentUserRolePage.jetx</beans:value><!-- 查看自己的角色页面 -->
+                        <beans:value>/userController/currentUserResourcePage.jetx</beans:value><!-- 查看自己的权限页面 -->
+                    </beans:list>
+                </beans:property>
+            </beans:bean>
+        </interceptor>
+    </interceptors>
+</beans:beans>
